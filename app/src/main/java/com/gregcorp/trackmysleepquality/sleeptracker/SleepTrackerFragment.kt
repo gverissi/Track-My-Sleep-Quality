@@ -22,7 +22,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.gregcorp.trackmysleepquality.R
 import com.gregcorp.trackmysleepquality.database.SleepDatabase
 import com.gregcorp.trackmysleepquality.databinding.FragmentSleepTrackerBinding
@@ -63,6 +65,18 @@ class SleepTrackerFragment : Fragment() {
 
         // Data Binding for ViewModel
         binding.lifecycleOwner = this
+
+        // Observer for navigate to SleepQualityFragment
+        sleepTrackerViewModel.navigateToSleepQuality.observe(this,
+            Observer {
+                it?.let {
+                    this.findNavController().navigate(
+                        SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepQualityFragment(it.nightId)
+                    )
+                    sleepTrackerViewModel.doneNavigating()
+                }
+            }
+        )
 
         return binding.root
     }
