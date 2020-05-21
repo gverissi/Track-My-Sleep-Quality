@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import com.gregcorp.trackmysleepquality.R
 import com.gregcorp.trackmysleepquality.database.SleepDatabase
 import com.gregcorp.trackmysleepquality.databinding.FragmentSleepTrackerBinding
@@ -66,7 +67,7 @@ class SleepTrackerFragment : Fragment() {
         // Data Binding for ViewModel
         binding.lifecycleOwner = this
 
-        // Observer for navigate to SleepQualityFragment
+        // Observer for navigate to SleepQualityFragment when STOP button is pressed
         sleepTrackerViewModel.navigateToSleepQuality.observe(this,
             Observer {
                 it?.let {
@@ -74,6 +75,20 @@ class SleepTrackerFragment : Fragment() {
                         SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepQualityFragment(it.nightId)
                     )
                     sleepTrackerViewModel.doneNavigating()
+                }
+            }
+        )
+
+        // Observer for th snackbar
+        sleepTrackerViewModel.showSnackbarEvent.observe(this,
+            Observer {
+                if (it == true) {
+                    Snackbar.make(
+                        activity!!.findViewById(android.R.id.content),
+                        getString(R.string.cleared_message),
+                        Snackbar.LENGTH_SHORT // How long to display the message
+                    ).show()
+                    sleepTrackerViewModel.doneShowingSnackbar()
                 }
             }
         )
