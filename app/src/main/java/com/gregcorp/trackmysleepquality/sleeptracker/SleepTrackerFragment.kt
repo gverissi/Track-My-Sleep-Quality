@@ -64,7 +64,23 @@ class SleepTrackerFragment : Fragment() {
         // Link the data between fragment and layout
         binding.sleepTrackerViewModel = sleepTrackerViewModel
 
-        // Data Binding for ViewModel
+        // Instantiate the adapter
+        val adapter = SleepNightAdapter()
+
+        // sleepList is the id of the RecyclerView in fragment_sleep_tracker
+        binding.sleepList.adapter = adapter
+
+        // Observer
+        sleepTrackerViewModel.nights.observe(viewLifecycleOwner,
+            Observer {
+                it?.let {
+                    adapter.data = it
+                }
+            }
+        )
+
+        // Specify the current fragment as the lifecycle owner of the binding.
+        // This is necessary so that the binding can observe LiveData updates.
         binding.lifecycleOwner = this
 
         // Observer for navigate to SleepQualityFragment when STOP button is pressed
@@ -79,7 +95,7 @@ class SleepTrackerFragment : Fragment() {
             }
         )
 
-        // Observer for th snackbar
+        // Observer for the snackbar
         sleepTrackerViewModel.showSnackbarEvent.observe(this,
             Observer {
                 if (it == true) {
