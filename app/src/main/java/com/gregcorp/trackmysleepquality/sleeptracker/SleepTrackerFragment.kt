@@ -69,6 +69,12 @@ class SleepTrackerFragment : Fragment() {
 
         // Define a grid layout for the recyclerView
         val manager = GridLayoutManager(activity, 3)
+        manager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int = when (position) {
+                0 -> 3
+                else -> 1
+            }
+        }
         binding.sleepList.layoutManager = manager
 
         // Instantiate the adapter
