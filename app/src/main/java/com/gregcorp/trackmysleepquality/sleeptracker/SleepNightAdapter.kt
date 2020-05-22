@@ -6,13 +6,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.gregcorp.trackmysleepquality.R
-import com.gregcorp.trackmysleepquality.convertDurationToFormatted
-import com.gregcorp.trackmysleepquality.convertNumericQualityToString
 import com.gregcorp.trackmysleepquality.database.SleepNight
 import com.gregcorp.trackmysleepquality.databinding.ListItemSleepNightBinding
 
-class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallback()) {
+class SleepNightAdapter(private val clickListenerFragment: SleepNightListener) : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallback()) {
 
     /**
      * Part of the RecyclerView adapter, called when RecyclerView needs a new [ViewHolder]
@@ -32,13 +29,14 @@ class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(
      */
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item)
+        holder.bind(item!!, clickListenerFragment)
     }
 
     class ViewHolder private constructor(val binding: ListItemSleepNightBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: SleepNight) {
+        fun bind(item: SleepNight, clickListenerParam: SleepNightListener) {
             binding.sleep = item
+            binding.clickListenerXML = clickListenerParam
             binding.executePendingBindings()
         }
 
@@ -51,14 +49,29 @@ class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(
         }
     }
 
-    class SleepNightDiffCallback : DiffUtil.ItemCallback<SleepNight>() {
-        override fun areItemsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
-            return oldItem.nightId == newItem.nightId
-        }
+}
 
-        override fun areContentsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
-            return oldItem == newItem
-        }
+/**
+ * Callback for calculating the diff between two non-null items in a list.
+ *
+ * Used by ListAdapter to calculate the minumum number of changes between and old list and a new
+ * list that's been passed to `submitList`.
+ */
+class SleepNightDiffCallback : DiffUtil.ItemCallback<SleepNight>() {
+    override fun areItemsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem.nightId == newItem.nightId
     }
 
+    override fun areContentsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem == newItem
+    }
+}
+
+/**
+ * If a function does not return any useful value, its return type is Unit.
+ * Unit is a type with only one value - Unit.
+ * This value does not have to be returned explicitly.
+ */
+class SleepNightListener(val clickListenerLambda: (sleepId: Int) -> Unit) {
+    fun onClick(night: SleepNight) = clickListenerLambda(night.nightId)
 }
