@@ -17,6 +17,7 @@
 package com.gregcorp.trackmysleepquality.sleeptracker
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -73,12 +74,25 @@ class SleepTrackerFragment : Fragment() {
         // Instantiate the adapter
         val adapter = SleepNightAdapter(
             SleepNightListener {
-                Toast.makeText(context, "$it", Toast.LENGTH_LONG).show()
+                sleepTrackerViewModel.onSleepNightClicked(it)
             }
         )
 
         // sleepList is the id of the RecyclerView in fragment_sleep_tracker.xml
         binding.sleepList.adapter = adapter
+
+        // Observer
+        sleepTrackerViewModel.navigateToSleepDataQuality.observe(this,
+            Observer {
+                it?.let {
+                    Log.i("Debug", "nightId = $it")
+                    this.findNavController().navigate(
+                        SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepDetailFragment(it)
+                    )
+                    sleepTrackerViewModel.onSleepDataQualityNavigated()
+                }
+            }
+        )
 
         // Observer
         sleepTrackerViewModel.nights.observe(viewLifecycleOwner,

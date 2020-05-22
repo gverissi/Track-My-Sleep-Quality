@@ -54,10 +54,6 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao,
 
     val nights = database.getAllNights()
 
-//    val nightsString = Transformations.map(nights) { nights ->
-//        formatNights(nights, application.resources)
-//    }
-
     // if (tonight == null) => startButtonVisible = true
     val startButtonVisible = Transformations.map(tonight) {
         null == it
@@ -74,21 +70,35 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao,
     }
 
     private var _showSnackbarEvent = MutableLiveData<Boolean>()
-
     val showSnackbarEvent: LiveData<Boolean>
         get() = _showSnackbarEvent
-
     fun doneShowingSnackbar() {
         _showSnackbarEvent.value = false
     }
 
     private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
-
     val navigateToSleepQuality: LiveData<SleepNight>
         get() = _navigateToSleepQuality
-
+    fun onStopTracking() {
+        uiScope.launch {
+            val oldNight = tonight.value ?: return@launch
+            oldNight.endTimeMilli = System.currentTimeMillis()
+            updateTheDatabase(oldNight)
+            _navigateToSleepQuality.value = oldNight
+        }
+    }
     fun doneNavigating() {
         _navigateToSleepQuality.value = null
+    }
+
+    private val _navigateToSleepDataQuality = MutableLiveData<Int>()
+    val navigateToSleepDataQuality
+        get() = _navigateToSleepDataQuality
+    fun onSleepNightClicked(id: Int) {
+        _navigateToSleepDataQuality.value = id
+    }
+    fun onSleepDataQualityNavigated() {
+        _navigateToSleepDataQuality.value = null
     }
 
     init {
@@ -127,14 +137,6 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao,
         }
     }
 
-    fun onStopTracking() {
-        uiScope.launch {
-            val oldNight = tonight.value ?: return@launch
-            oldNight.endTimeMilli = System.currentTimeMillis()
-            updateTheDatabase(oldNight)
-            _navigateToSleepQuality.value = oldNight
-        }
-    }
 
     private suspend fun updateTheDatabase(night: SleepNight) {
         withContext(Dispatchers.IO) {
